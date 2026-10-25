@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ViralBoost AI</title>
+<style>
+:root{color-scheme:dark;--bg:#10101a;--panel:#1b1b2a;--accent:#a78bfa;--text:#f7f5ff;--muted:#b8b4ca}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#151426,#10101a 55%);color:var(--text);font:16px system-ui,-apple-system,sans-serif}
+header{padding:26px 18px 18px;background:linear-gradient(120deg,#5426a8,#a23bc3);border-radius:0 0 24px 24px}
+h1{margin:0;font-size:28px}header p{margin:7px 0 0;color:#f0e7ff}
+main{padding:16px;max-width:760px;margin:auto}.tabs{display:flex;gap:8px;overflow:auto;margin:0 0 16px}
+button,.tab{border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:650;background:#302b45;color:var(--text);cursor:pointer}
+.tab.active,button.primary{background:var(--accent);color:#171124}.panel{background:var(--panel);padding:16px;border:1px solid #353149;border-radius:18px;margin-bottom:14px}
+h2{font-size:19px;margin:0 0 12px}label{display:block;color:var(--muted);font-size:14px;margin:12px 0 6px}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #45405c;background:#11111b;color:var(--text);font:inherit}
+textarea{min-height:90px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.result{white-space:pre-wrap;background:#11111b;border-radius:12px;padding:12px;margin-top:12px;min-height:50px}
+.small{color:var(--muted);font-size:13px}.item{border-top:1px solid #39344d;padding:12px 0}.item:first-child{border-top:0}
+.hidden{display:none}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stats input{min-width:0}
+</style>
+</head>
+<body>
+<header><h1>✨ ViralBoost AI</h1><p>Your starter toolkit for better TikTok content</p></header>
+<main>
+<div class="tabs">
+<button class="tab active" data-tab="creator">Content Creator</button>
+<button class="tab" data-tab="planner">Planner</button>
+<button class="tab" data-tab="tracker">Growth Tracker</button>
+</div>
+<section id="creator" class="screen">
+<div class="panel">
+<h2>Caption & video idea generator</h2>
+<p class="small">Starter version: uses built-in templates offline. It does not connect to an AI service yet.</p>
+<label for="product">What are you promoting?</label><input id="product" placeholder="e.g. handmade leather sandals">
+<label for="audience">Audience</label><select id="audience"><option>People who love handmade footwear</option><option>Men looking for stylish shoes</option><option>Women looking for comfortable footwear</option><option>Small business customers</option></select>
+<label for="language">Language</label><select id="language"><option value="en">English</option><option value="es">Español mexicano</option><option value="both">English + Mexican Spanish</option></select>
+<label for="style">Video style</label><select id="style"><option value="show">Product showcase</option><option value="process">Behind the scenes</option><option value="story">Small-business story</option><option value="offer">Sales promotion</option></select>
+<button class="primary" id="generate">Create caption ideas</button>
+<div class="result" id="result">Your caption ideas will appear here.</div>
+<div class="row" style="margin-top:10px"><button id="copy">Copy text</button><button id="saveIdea">Save idea</button></div>
+</div>
+<div class="panel"><h2>Quick video hooks</h2><div id="hooks"></div></div>
+</section>
+<section id="planner" class="screen hidden">
+<div class="panel"><h2>Content planner</h2>
+<label for="postDate">Planned date</label><input type="date" id="postDate">
+<label for="postIdea">Video idea</label><textarea id="postIdea" placeholder="Show how you make a pair of shoes..."></textarea>
+<label for="postStatus">Status</label><select id="postStatus"><option>Idea</option><option>Ready to film</option><option>Ready to post</option><option>Published</option></select>
+<button class="primary" id="addPlan">Save to planner</button><div id="plans"></div></div>
+<div class="panel"><h2>Saved caption ideas</h2><div id="savedIdeas"></div></div>
+</section>
+<section id="tracker" class="screen hidden">
+<div class="panel"><h2>Video performance tracker</h2><p class="small">Enter your numbers manually from TikTok analytics.</p>
+<label for="videoName">Video title</label><input id="videoName" placeholder="e.g. How I make sandals">
+<div class="stats">
+<div><label for="views">Views</label><input id="views" type="number" min="0" value="0"></div>
+<div><label for="likes">Likes</label><input id="likes" type="number" min="0" value="0"></div>
+<div><label for="comments">Comments</label><input id="comments" type="number" min="0" value="0"></div>
+</div><button class="primary" id="addStats" style="margin-top:12px">Save performance</button><div id="statsList"></div></div>
+</section>
+<p class="small">Your entries are saved on this device in the app's local storage. Uninstalling or clearing app data may erase them. Viral reach is never guaranteed.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const get=(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}};
+const put=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));
+ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('hidden',s.id!==b.dataset.tab));
+}));
+const templates={
+ en:{
+ show:p=>`✨ Take a closer look at these ${p}! Handmade with care and made to stand out.\nWhich detail do you love most? Tell me in the comments.\n\n#Handmade #Footwear #SmallBusiness #Style`,
+ process:p=>`From raw materials to the finished pair 👟 Here's a little behind-the-scenes look at making ${p}.\nFollow along for more of the process!\n\n#HandmadeProcess #BehindTheScenes #SmallBusiness`,
+ story:p=>`Every pair has a story. ❤️ Here's what goes into creating our ${p} by hand.\nSupport handmade and tell us what you'd like to see next.\n\n#HandmadeBusiness #MadeWithCare #SmallBusiness`,
+ offer:p=>`Looking for your next favorite pair? 👟 Check out our ${p}.\nSend us a message for details and availability.\n\n#FootwearStyle #ShopSmall #Handmade`
+ },
+ es:{
+ show:p=>`✨ ¡Mira estos ${p}! Hechos a mano con cuidado y estilo.\n¿Qué detalle te gusta más? Cuéntamelo en los comentarios.\n\n#HechoAMano #Calzado #Emprendimiento #Estilo`,
+ process:p=>`De los materiales al producto terminado 👟 Así elaboramos nuestros ${p}.\n¡Síguenos para ver más del proceso!\n\n#ProcesoArtesanal #DetrásDeCámaras #NegocioLocal`,
+ story:p=>`Cada par tiene una historia. ❤️ Así elaboramos nuestros ${p} a mano.\nApoya lo hecho a mano y dinos qué te gustaría ver después.\n\n#HechoAMano #Emprendimiento #ConCariño`,
+ offer:p=>`¿Buscas tu próximo par favorito? 👟 Conoce nuestros ${p}.\nMándanos mensaje para consultar detalles y disponibilidad.\n\n#Calzado #CompraLocal #HechoAMano`
+ }
+};
+function generate(){
+ let p=$('product').value.trim()||'handmade footwear',lang=$('language').value,style=$('style').value;
+ let en=templates.en[style](p),es=templates.es[style](p);
+ $('result').textContent=lang==='en'?en:lang==='es'?es:en+'\n\n--- Español mexicano ---\n'+es;
+}
+$('generate').onclick=generate;
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('result').textContent);$('copy').textContent='Copied!';setTimeout(()=>$('copy').textContent='Copy text',1200)}catch(e){$('result').textContent+='\\n\\nSelect and copy this text manually.'}};
+$('hooks').innerHTML=['“Here is how this pair is made…”','“Three details that make this pair special”','“Which style would you choose?”','“A day in my handmade footwear business”'].map(t=>`<div class="item">${t}</div>`).join('');
+$('saveIdea').onclick=()=>{let a=get('savedIdeas');a.unshift($('result').textContent);put('savedIdeas',a);renderSaved();$('saveIdea').textContent='Saved!';setTimeout(()=>$('saveIdea').textContent='Save idea',1000)};
+function renderSaved(){$('savedIdeas').innerHTML=get('savedIdeas').map((x,i)=>`<div class="item">${esc(x)}<br><button onclick="removeSaved(${i})">Delete</button></div>`).join('')||'<p class="small">No saved ideas yet.</p>'}
+window.removeSaved=i=>{let a=get('savedIdeas');a.splice(i,1);put('savedIdeas',a);renderSaved()};
+$('addPlan').onclick=()=>{if(!$('postIdea').value.trim())return alert('Add a video idea first.');let a=get('plans');a.unshift({date:$('postDate').value,idea:$('postIdea').value,status:$('postStatus').value});put('plans',a);$('postIdea').value='';renderPlans()};
+function renderPlans(){$('plans').innerHTML=get('plans').map((x,i)=>`<div class="item"><b>${esc(x.date||'Date not set')}</b> · ${esc(x.status)}<p>${esc(x.idea)}</p><button onclick="removePlan(${i})">Delete</button></div>`).join('')||'<p class="small">No planned posts yet.</p>'}
+window.removePlan=i=>{let a=get('plans');a.splice(i,1);put('plans',a);renderPlans()};
+$('addStats').onclick=()=>{let a=get('stats');a.unshift({name:$('videoName').value||'Untitled video',views:+$('views').value||0,likes:+$('likes').value||0,comments:+$('comments').value||0});put('stats',a);renderStats()};
+function renderStats(){$('statsList').innerHTML=get('stats').map((x,i)=>`<div class="item"><b>${esc(x.name)}</b><p>Views: ${x.views} · Likes: ${x.likes} · Comments: ${x.comments}</p><button onclick="removeStats(${i})">Delete</button></div>`).join('')||'<p class="small">No video stats saved yet.</p>'}
+window.removeStats=i=>{let a=get('stats');a.splice(i,1);put('stats',a);renderStats()};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+renderSaved();renderPlans();renderStats();generate();
+</script>
+</body></html>
